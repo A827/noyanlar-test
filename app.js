@@ -203,7 +203,7 @@
           <td>${badge}</td>
           <td class="row-actions">
             <button class="btn tiny" data-act="edit">Düzenle</button>
-            <button class="btn tiny danger" data-act="delete">Sil</button>
+            <button class="btn tiny secondary danger" data-act="delete">Sil</button>
           </td>
         </tr>`;
     }).join('');
@@ -272,7 +272,7 @@
       </div>
     `;
 
-    // After rendering, if we’re editing, scroll editor into view and focus name
+    // Focus & scroll editor into view
     const editorEl = $('userEditor');
     if (editorEl){
       editorEl.scrollIntoView({ behavior:'smooth', block:'start' });
@@ -281,7 +281,7 @@
     }
   }
 
-  // Single delegated click handler so buttons keep working after re-renders
+  // Delegated handlers inside modal content so re-renders keep them working
   if (usersListBox){
     usersListBox.addEventListener('click', (e)=>{
       const btn = e.target.closest('button');
@@ -363,6 +363,7 @@
     const dup = users.find(u => u.name.trim().toLowerCase() === name.toLowerCase() && u.id !== id);
     if (dup){ alert('Bu kullanıcı adı zaten var.'); return; }
 
+    // Create
     if (!id){
       if (!pass){ alert('Yeni kullanıcı için şifre zorunlu.'); return; }
       users.push({ id: cryptoRandomId(), name, email, phone, role, pass });
@@ -373,6 +374,7 @@
       return;
     }
 
+    // Update
     const idx = users.findIndex(u=>u.id===id);
     if (idx<0) return;
 
@@ -384,7 +386,7 @@
     users[idx] = { ...users[idx], name, email, phone, role, pass: pass ? pass : users[idx].pass };
     saveUsers(users);
 
-    // If current user changed, update UI visibility + preparedBy
+    // If current user changed, update header/admin button + preparedBy
     const me = currentUser();
     if (me && me.id === id){
       preparedByInp.value = users[idx].name || '';
@@ -402,7 +404,6 @@
     if (adminModal) adminModal.classList.add('show');
     selectedUserId = null;
     renderUsersPanel();
-    // ensure modal content starts at top
     const modalBox = adminModal?.querySelector('.modal');
     if (modalBox) modalBox.scrollTop = 0;
   }
@@ -470,7 +471,7 @@
     requireAdminThen(()=>{
       selectedUserId = null;
       renderUsersPanel();
-      // Prefill from quick form if any
+      // Prefill editor from quick form (optional)
       const name  = (newUserName.value||'').trim();
       const email = (newUserEmail.value||'').trim();
       const phone = (newUserPhone.value||'').trim();
@@ -502,7 +503,14 @@
 
   if (adminBtn)  adminBtn.addEventListener('click', ()=>{ requireAdminThen(showAdminModal); });
   if (adminClose) adminClose.addEventListener('click', hideAdminModal);
-  if (adminModal) adminModal.addEventListener('click', (e)=>{ if(e.target === adminModal){ hideAdminModal(); } });
+  if (adminModal) {
+    // Click backdrop to close
+    adminModal.addEventListener('click', (e)=>{ if(e.target === adminModal){ hideAdminModal(); } });
+    // ESC to close
+    document.addEventListener('keydown', (e)=>{
+      if (e.key === 'Escape' && adminModal.classList.contains('show')) hideAdminModal();
+    });
+  }
 
   // Auth gate buttons
   if (loginBtn)  loginBtn.addEventListener('click', handleLogin);
@@ -648,23 +656,25 @@
     ).join('');
     scheduleWrap.style.display = 'block';
 
-    exportBtn.dataset.csv = toCSV(rows, {
-      date: metaDate.textContent || todayStr(),
-      preparedBy: preparedByInp.value || '',
-      customer: customerNameInp.value || '',
-      phone: customerPhoneInp.value || '',
-      email: customerEmailInp.value || '',
-      property: propertyNameInp.value || '',
-      block: propertyBlockInp.value || '',
-      unit: propertyUnitInp.value || '',
-      type: propertyTypeInp.value || '',
-      currency: cur,
-      sale: (sale||0).toFixed(2),
-      down: (downPay||0).toFixed(2),
-      balance: (P||0).toFixed(2),
-      totalInstallments: (totalInstallments||0).toFixed(2),
-      totalInterest: (totalInterestBurden||0).toFixed(2)
-    });
+    if (exportBtn) {
+      exportBtn.dataset.csv = toCSV(rows, {
+        date: metaDate.textContent || todayStr(),
+        preparedBy: preparedByInp.value || '',
+        customer: customerNameInp.value || '',
+        phone: customerPhoneInp.value || '',
+        email: customerEmailInp.value || '',
+        property: propertyNameInp.value || '',
+        block: propertyBlockInp.value || '',
+        unit: propertyUnitInp.value || '',
+        type: propertyTypeInp.value || '',
+        currency: cur,
+        sale: (sale||0).toFixed(2),
+        down: (downPay||0).toFixed(2),
+        balance: (P||0).toFixed(2),
+        totalInstallments: (totalInstallments||0).toFixed(2),
+        totalInterest: (totalInterestBurden||0).toFixed(2)
+      });
+    }
   }
 
   /* =========================
