@@ -36,8 +36,8 @@
 
   // Auth gate
   const authGate  = $('authGate');
-  const loginUser = $('loginUser');     // text input (username)
-  const loginPass = $('loginPass');     // password input
+  const loginUser = $('loginUser');
+  const loginPass = $('loginPass');
   const loginBtn  = $('loginBtn');
   const logoutBtn = $('logoutBtn');
 
@@ -50,19 +50,19 @@
   // Admin modal
   const adminModal   = $('adminModal');
   const adminClose   = $('adminClose');
-  const usersListBox = $('usersList'); // container we render table + editor into
+  const usersListBox = $('usersList');
 
-  // Add user quick form (left column in modal)
+  // Quick add (left card)
   const addUserBtn   = $('addUserBtn');
   const newUserName  = $('newUserName');
   const newUserEmail = $('newUserEmail');
   const newUserPhone = $('newUserPhone');
   const newUserPass  = $('newUserPass');
 
-  // PIN block (right column in modal)
-  const oldPin        = $('oldPin');
-  const newPin        = $('newPin');
-  const changePinBtn  = $('changePinBtn');
+  // PIN block
+  const oldPin       = $('oldPin');
+  const newPin       = $('newPin');
+  const changePinBtn = $('changePinBtn');
 
   // Calculator UI
   const inputsDiv      = $('inputs');
@@ -153,7 +153,6 @@
     try{ localStorage.setItem(USERS_KEY+'_ts', String(Date.now())); }catch{}
   }
 
-  // Ensure an admin user + PIN always exist if store is empty
   function seedUsersIfEmpty(){
     let users = loadUsers();
     if(users.length === 0){
@@ -189,6 +188,8 @@
      ADMIN UI: TABLE + EDITOR
      ========================= */
   let selectedUserId = null;
+  // NEW: control whether the bottom editor is shown at all
+  let showEditor = false; // default hidden to remove the extra “Yeni Kullanıcı” section
 
   function userTableHTML(users){
     const rows = users.map(u=>{
@@ -251,7 +252,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          ${user.id ? '<button class="btn secondary" id="cancelEditBtn">Vazgeç</button>' : ''}
+          ${user.id ? '<button class="btn secondary" id="cancelEditBtn">Vazgeç</button>' : '<button class="btn secondary" id="cancelEditBtn">Vazgeç</button>'}
           <button class="btn" id="saveEditBtn">${user.id ? 'Kaydet' : 'Ekle'}</button>
         </div>
       </div>
@@ -262,36 +263,37 @@
     if (!usersListBox) return;
     const users = loadUsers();
     const editorUser = selectedUserId ? users.find(u=>u.id===selectedUserId) : null;
+
+    // NEW: render only the table by default; editor is rendered conditionally
     usersListBox.innerHTML = `
       <div class="modal-card">
         <h4 class="modal-section-title">Kullanıcılar</h4>
         ${userTableHTML(users)}
       </div>
-      <div class="modal-card">
-        ${editorHTML(editorUser)}
-      </div>
+      ${showEditor ? `<div class="modal-card">${editorHTML(editorUser)}</div>` : ''}
     `;
 
-    // Focus & scroll editor into view
-    const editorEl = $('userEditor');
-    if (editorEl){
-      editorEl.scrollIntoView({ behavior:'smooth', block:'start' });
-      const nameEl = $('editName');
-      if (nameEl) { nameEl.focus(); nameEl.select?.(); }
+    if (showEditor){
+      const editorEl = $('userEditor');
+      if (editorEl){
+        editorEl.scrollIntoView({ behavior:'smooth', block:'start' });
+        const nameEl = $('editName');
+        if (nameEl) { nameEl.focus(); nameEl.select?.(); }
+      }
     }
   }
 
-  // Delegated handlers inside modal content so re-renders keep them working
+  // Delegated handlers inside modal
   if (usersListBox){
     usersListBox.addEventListener('click', (e)=>{
       const btn = e.target.closest('button');
       if (!btn) return;
 
-      // Row actions
       if (btn.dataset.act === 'edit'){
         const tr = btn.closest('tr[data-id]');
         if (!tr) return;
         selectedUserId = tr.getAttribute('data-id');
+        showEditor = true;                 // NEW: show editor only when editing
         renderUsersPanel();
         return;
       }
@@ -303,19 +305,18 @@
         return;
       }
 
-      // Editor footer
       if (btn.id === 'saveEditBtn'){
         requireAdminThen(handleSaveEditor);
         return;
       }
       if (btn.id === 'cancelEditBtn'){
         selectedUserId = null;
+        showEditor = false;                // NEW: hide editor when cancel
         renderUsersPanel();
         return;
       }
     });
 
-    // Save on Enter inside the editor
     usersListBox.addEventListener('keydown', (e)=>{
       if (e.key === 'Enter' && e.target.closest('#userEditor')){
         e.preventDefault();
@@ -363,18 +364,17 @@
     const dup = users.find(u => u.name.trim().toLowerCase() === name.toLowerCase() && u.id !== id);
     if (dup){ alert('Bu kullanıcı adı zaten var.'); return; }
 
-    // Create
     if (!id){
       if (!pass){ alert('Yeni kullanıcı için şifre zorunlu.'); return; }
       users.push({ id: cryptoRandomId(), name, email, phone, role, pass });
       saveUsers(users);
       selectedUserId = null;
+      showEditor = false;                  // NEW: hide after add
       renderUsersPanel();
       alert('Kullanıcı eklendi.');
       return;
     }
 
-    // Update
     const idx = users.findIndex(u=>u.id===id);
     if (idx<0) return;
 
@@ -386,7 +386,6 @@
     users[idx] = { ...users[idx], name, email, phone, role, pass: pass ? pass : users[idx].pass };
     saveUsers(users);
 
-    // If current user changed, update header/admin button + preparedBy
     const me = currentUser();
     if (me && me.id === id){
       preparedByInp.value = users[idx].name || '';
@@ -396,6 +395,7 @@
     }
 
     selectedUserId = null;
+    showEditor = false;                    // NEW: hide after save
     renderUsersPanel();
     alert('Kullanıcı güncellendi.');
   }
@@ -403,6 +403,7 @@
   function showAdminModal(){
     if (adminModal) adminModal.classList.add('show');
     selectedUserId = null;
+    showEditor = false;                    // NEW: default hidden when opening
     renderUsersPanel();
     const modalBox = adminModal?.querySelector('.modal');
     if (modalBox) modalBox.scrollTop = 0;
@@ -469,9 +470,11 @@
      ========================= */
   if (addUserBtn) addUserBtn.addEventListener('click', ()=>{
     requireAdminThen(()=>{
+      // open editor in create mode, prefilled from quick form if provided
       selectedUserId = null;
+      showEditor = true;                   // NEW: show editor only when adding
       renderUsersPanel();
-      // Prefill editor from quick form (optional)
+
       const name  = (newUserName.value||'').trim();
       const email = (newUserEmail.value||'').trim();
       const phone = (newUserPhone.value||'').trim();
@@ -504,9 +507,7 @@
   if (adminBtn)  adminBtn.addEventListener('click', ()=>{ requireAdminThen(showAdminModal); });
   if (adminClose) adminClose.addEventListener('click', hideAdminModal);
   if (adminModal) {
-    // Click backdrop to close
     adminModal.addEventListener('click', (e)=>{ if(e.target === adminModal){ hideAdminModal(); } });
-    // ESC to close
     document.addEventListener('keydown', (e)=>{
       if (e.key === 'Escape' && adminModal.classList.contains('show')) hideAdminModal();
     });
@@ -856,7 +857,7 @@
   })();
 
   /* =========================
-     UTIL: Escape helpers
+     UTIL
      ========================= */
   function escapeHTML(s){
     return String(s||'').replace(/[&<>"']/g, m => ({
