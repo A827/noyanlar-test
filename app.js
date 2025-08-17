@@ -36,8 +36,8 @@
 
   // Auth gate
   const authGate  = $('authGate');
-  const loginUser = $('loginUser');
-  const loginPass = $('loginPass');
+  const loginUser = $('loginUser');     // username
+  const loginPass = $('loginPass');     // password
   const loginBtn  = $('loginBtn');
   const logoutBtn = $('logoutBtn');
 
@@ -50,7 +50,7 @@
   // Admin modal
   const adminModal   = $('adminModal');
   const adminClose   = $('adminClose');
-  const usersListBox = $('usersList');
+  const usersListBox = $('usersList'); // dynamic content (table + editor)
 
   // Quick add (left card)
   const addUserBtn   = $('addUserBtn');
@@ -188,8 +188,8 @@
      ADMIN UI: TABLE + EDITOR
      ========================= */
   let selectedUserId = null;
-  // NEW: control whether the bottom editor is shown at all
-  let showEditor = false; // default hidden to remove the extra “Yeni Kullanıcı” section
+  // Hide the editor by default; only show when editing or adding
+  let showEditor = false;
 
   function userTableHTML(users){
     const rows = users.map(u=>{
@@ -252,7 +252,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          ${user.id ? '<button class="btn secondary" id="cancelEditBtn">Vazgeç</button>' : '<button class="btn secondary" id="cancelEditBtn">Vazgeç</button>'}
+          <button class="btn secondary" id="cancelEditBtn">Vazgeç</button>
           <button class="btn" id="saveEditBtn">${user.id ? 'Kaydet' : 'Ekle'}</button>
         </div>
       </div>
@@ -264,7 +264,6 @@
     const users = loadUsers();
     const editorUser = selectedUserId ? users.find(u=>u.id===selectedUserId) : null;
 
-    // NEW: render only the table by default; editor is rendered conditionally
     usersListBox.innerHTML = `
       <div class="modal-card">
         <h4 class="modal-section-title">Kullanıcılar</h4>
@@ -293,7 +292,7 @@
         const tr = btn.closest('tr[data-id]');
         if (!tr) return;
         selectedUserId = tr.getAttribute('data-id');
-        showEditor = true;                 // NEW: show editor only when editing
+        showEditor = true;
         renderUsersPanel();
         return;
       }
@@ -311,7 +310,7 @@
       }
       if (btn.id === 'cancelEditBtn'){
         selectedUserId = null;
-        showEditor = false;                // NEW: hide editor when cancel
+        showEditor = false;
         renderUsersPanel();
         return;
       }
@@ -349,43 +348,60 @@
 
   function handleSaveEditor(){
     const id    = ($('#userEditor')||{}).getAttribute?.('data-id') || '';
-    const name  = ($('#editName') || {}).value?.trim() || '';
-    const role  = ($('#editRole') || {}).value === 'admin' ? 'admin' : 'user';
-    const email = ($('#editEmail')||{}).value?.trim() || '';
-    const phone = ($('#editPhone')||{}).value?.trim() || '';
-    const pass  = ($('#editPass') || {}).value || '';
+    const nameI = ($('#editName') || {}).value?.trim() || '';
+    const roleI = ($('#editRole') || {}).value === 'admin' ? 'admin' : 'user';
+    const emailI= ($('#editEmail')||{}).value?.trim() || '';
+    const phoneI= ($('#editPhone')||{}).value?.trim() || '';
+    const passI = ($('#editPass') || {}).value || '';
     const pin   = ($('#editPin')  || {}).value || '';
 
-    if (!name){ alert('Ad Soyad zorunlu.'); return; }
     const pinCur = localStorage.getItem(ADMIN_PIN_KEY) || '1234';
     if (pin !== pinCur){ alert('Admin PIN hatalı.'); return; }
 
     const users = loadUsers();
-    const dup = users.find(u => u.name.trim().toLowerCase() === name.toLowerCase() && u.id !== id);
-    if (dup){ alert('Bu kullanıcı adı zaten var.'); return; }
 
+    // ADD MODE
     if (!id){
-      if (!pass){ alert('Yeni kullanıcı için şifre zorunlu.'); return; }
-      users.push({ id: cryptoRandomId(), name, email, phone, role, pass });
+      if (!nameI){ alert('Ad Soyad zorunlu.'); return; }
+      if (!passI){ alert('Yeni kullanıcı için şifre zorunlu.'); return; }
+      const dupAdd = users.find(u => u.name.trim().toLowerCase() === nameI.toLowerCase());
+      if (dupAdd){ alert('Bu kullanıcı adı zaten var.'); return; }
+      users.push({ id: cryptoRandomId(), name: nameI, email: emailI, phone: phoneI, role: roleI, pass: passI });
       saveUsers(users);
       selectedUserId = null;
-      showEditor = false;                  // NEW: hide after add
+      showEditor = false;
       renderUsersPanel();
       alert('Kullanıcı eklendi.');
       return;
     }
 
+    // EDIT MODE
     const idx = users.findIndex(u=>u.id===id);
-    if (idx<0) return;
+    if (idx < 0){ alert('Kullanıcı bulunamadı.'); return; }
+    const prev = users[idx];
 
-    if (users[idx].role==='admin' && role!=='admin'){
-      const adminCount = users.filter(u=>u.role==='admin').length;
-      if (adminCount<=1){ alert('En az bir admin kalmalı.'); return; }
+    const newName  = nameI  || prev.name;
+    const newEmail = emailI || prev.email || '';
+    const newPhone = phoneI || prev.phone || '';
+    const newRole  = roleI;
+    const newPass  = passI ? passI : prev.pass;
+
+    // Only check duplicates if name actually changed
+    if (newName.trim().toLowerCase() !== (prev.name||'').trim().toLowerCase()){
+      const dup = users.find(u => u.name.trim().toLowerCase() === newName.trim().toLowerCase());
+      if (dup && dup.id !== id){ alert('Bu kullanıcı adı zaten var.'); return; }
     }
 
-    users[idx] = { ...users[idx], name, email, phone, role, pass: pass ? pass : users[idx].pass };
+    // Prevent removing the last admin
+    if (prev.role === 'admin' && newRole !== 'admin'){
+      const adminCount = users.filter(u=>u.role==='admin').length;
+      if (adminCount <= 1){ alert('En az bir admin kalmalı.'); return; }
+    }
+
+    users[idx] = { ...prev, name: newName, email: newEmail, phone: newPhone, role: newRole, pass: newPass };
     saveUsers(users);
 
+    // If current user changed, reflect in UI
     const me = currentUser();
     if (me && me.id === id){
       preparedByInp.value = users[idx].name || '';
@@ -395,7 +411,7 @@
     }
 
     selectedUserId = null;
-    showEditor = false;                    // NEW: hide after save
+    showEditor = false;
     renderUsersPanel();
     alert('Kullanıcı güncellendi.');
   }
@@ -403,7 +419,7 @@
   function showAdminModal(){
     if (adminModal) adminModal.classList.add('show');
     selectedUserId = null;
-    showEditor = false;                    // NEW: default hidden when opening
+    showEditor = false;
     renderUsersPanel();
     const modalBox = adminModal?.querySelector('.modal');
     if (modalBox) modalBox.scrollTop = 0;
@@ -470,9 +486,9 @@
      ========================= */
   if (addUserBtn) addUserBtn.addEventListener('click', ()=>{
     requireAdminThen(()=>{
-      // open editor in create mode, prefilled from quick form if provided
+      // open editor in create mode, optionally prefill from quick form
       selectedUserId = null;
-      showEditor = true;                   // NEW: show editor only when adding
+      showEditor = true;
       renderUsersPanel();
 
       const name  = (newUserName.value||'').trim();
