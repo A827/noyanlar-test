@@ -1,0 +1,312 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Noyanlar • Satış Taksit Hesaplayıcı</title>
+  <meta name="theme-color" content="#8b1c23" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* Auth gate (lightweight, uses existing variables) */
+    .gate {
+      position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+      background:var(--app,#0b1220); z-index:100; padding:24px;
+    }
+    .gate .panel {
+      width:min(560px, 96%); background:var(--card,#0f172a); color:var(--ink,#eef2f8);
+      border:1px solid var(--line,#243244); border-radius:16px; padding:20px 20px 16px;
+      box-shadow:0 24px 80px rgba(0,0,0,.45);
+    }
+    .gate .panel h1 { margin:0 0 4px; font-size:22px }
+    .gate .panel p { margin:0 0 16px; color:var(--muted,#9aa3b2) }
+    .gate .row { display:grid; grid-template-columns:1fr; gap:12px; margin:12px 0 16px }
+    .gate .actions { display:flex; gap:10px; justify-content:flex-end; margin-top:6px }
+    .gate .small { font-size:12px; color:var(--muted,#9aa3b2) }
+    .hidden { display:none !important; }
+
+    /* Minimal modal styles (fullscreen) in case styles.css lacks them */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:200}
+    .modal-backdrop.show{display:block}
+    .modal{
+      position:fixed; inset:0; margin:0;
+      background:var(--bg,#0f1118); color:var(--ink,#e9ecf3);
+      display:flex; flex-direction:column;
+    }
+    .modal-head{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:16px 20px; border-bottom:1px solid var(--line,#26314a); background:var(--card,#101629);
+    }
+    .modal-body{
+      padding:16px 20px; overflow:auto; flex:1;
+    }
+    .modal-grid{
+      display:grid; gap:16px; grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+    .modal-card{
+      background:var(--card,#101629); border:1px solid var(--line,#26314a); border-radius:12px; padding:14px;
+    }
+    @media (max-width: 900px){ .modal-grid{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <!-- AUTH GATE -->
+  <div id="authGate" class="gate">
+    <div class="panel">
+      <h1>Noyanlar • Giriş</h1>
+      <p>Lütfen kullanıcı adı ve şifreyi girin.</p>
+      <div class="row">
+        <div class="field">
+          <label for="loginUser">Kullanıcı Adı</label>
+          <input id="loginUser" type="text" placeholder="Örn. Admin" />
+        </div>
+        <div class="field">
+          <label for="loginPass">Şifre</label>
+          <input id="loginPass" type="password" placeholder="••••" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="loginBtn" class="btn">Giriş Yap</button>
+      </div>
+      <p class="small">Not: Bu demo yerel depolama (localStorage) kullanır. Üretimde sunucu tabanlı sisteme geçeceğiz.</p>
+    </div>
+  </div>
+
+  <!-- BRAND BAR -->
+  <header class="brandbar no-print hidden" id="appHeader">
+    <div class="brand-left">
+      <div class="brand-logo" aria-hidden="true">
+        <svg viewBox="0 0 256 256" width="28" height="28" role="img">
+          <rect width="256" height="256" rx="56" fill="currentColor"></rect>
+          <path d="M64 168h56v24H64a24 24 0 0 1-24-24V88a24 24 0 0 1 24-24h56v24H64v80Zm72 24h56a24 24 0 0 0 24-24V88a24 24 0 0 0-24-24h-56v24h56v80h-56v24Z" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">Noyanlar</div>
+        <div class="brand-sub">Satış Taksit Hesaplayıcı</div>
+      </div>
+    </div>
+    <nav class="brand-right">
+      <button id="themeToggle" class="nav-link" aria-label="Tema değiştir">🌙/☀️</button>
+      <button id="adminBtn" class="nav-link" title="Kullanıcı yönetimi">Admin</button>
+      <button id="logoutBtn" class="nav-link" title="Çıkış">Çıkış</button>
+      <a href="https://noyanlar.com/" target="_blank" rel="noopener" class="nav-link">noyanlar.com</a>
+    </nav>
+  </header>
+
+  <main class="wrap print-area hidden" id="appMain">
+    <div class="page-head">
+      <h1>Ödeme Planı</h1>
+      <span class="badge" id="currencyBadge">Para Birimi: GBP (£)</span>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: FORM -->
+      <section class="card form-card">
+        <!-- Property / customer meta -->
+        <div class="inputs-grid">
+          <div class="field">
+            <label for="preparedBy">Hazırlayan (Satış Temsilcisi)</label>
+            <input id="preparedBy" type="text" placeholder="Ad Soyad" />
+          </div>
+          <div class="field">
+            <label for="customerName">Müşteri Adı</label>
+            <input id="customerName" type="text" placeholder="Ad Soyad" />
+          </div>
+          <div class="field">
+            <label for="customerPhone">Telefon</label>
+            <input id="customerPhone" type="tel" placeholder="+90 ..." />
+          </div>
+          <div class="field">
+            <label for="customerEmail">E-posta</label>
+            <input id="customerEmail" type="email" placeholder="musteri@example.com" />
+          </div>
+          <div class="field">
+            <label for="propertyName">Proje / Daire Adı</label>
+            <input id="propertyName" type="text" placeholder="Örn. Olea Residence A2-12" />
+          </div>
+          <div class="field">
+            <label for="propertyBlock">Blok</label>
+            <input id="propertyBlock" type="text" placeholder="A / B / C" />
+          </div>
+          <div class="field">
+            <label for="propertyUnit">Daire No</label>
+            <input id="propertyUnit" type="text" placeholder="12" />
+          </div>
+          <div class="field">
+            <label for="propertyType">Tip</label>
+            <input id="propertyType" type="text" placeholder="1+1 / 2+1 / Villa ..." />
+          </div>
+        </div>
+
+        <!-- Currency & compounding -->
+        <div class="form-grid">
+          <div class="field">
+            <label>Para Birimi</label>
+            <select id="currency">
+              <option value="GBP" selected>GBP (£)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="USD">USD ($)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Bileşik Dönem</label>
+            <select id="compound">
+              <option value="12">Aylık (12)</option>
+              <option value="4">3 Aylık (4)</option>
+              <option value="1">Yıllık (1)</option>
+            </select>
+          </div>
+          <div class="field checkbox">
+            <label class="chk">
+              <input type="checkbox" id="interestFree" />
+              <span>Faizsiz Plan (APR %0)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Presets -->
+        <div id="presets" class="presets no-print">
+          <span class="muted">Hazır Planlar:</span>
+          <button class="chip" data-sale="75000" data-down="20000" data-apr="8" data-term="120">£75,000 • £20,000 • 120 ay @ %8</button>
+          <button class="chip" data-sale="75000" data-down="20000" data-apr="5.5" data-term="120">£75,000 • £20,000 • 120 ay @ %5.5</button>
+          <button class="chip" data-sale="75000" data-down="20000" data-apr="3.75" data-term="120">£75,000 • £20,000 • 120 ay @ %3.75</button>
+        </div>
+
+        <!-- Numeric inputs (rendered by JS) -->
+        <div id="inputs" class="inputs-grid"></div>
+
+        <div class="actions no-print">
+          <button class="btn" id="calcBtn">Hesapla</button>
+          <button class="btn secondary" id="resetBtn">Sıfırla</button>
+          <button class="btn outline" id="exportBtn" title="CSV dışa aktar">CSV Dışa Aktar</button>
+          <button class="btn ghost" id="printBtn">Yazdır / PDF</button>
+          <button class="btn gold" id="saveQuoteBtn" title="Bu planı kaydet">Planı Kaydet</button>
+        </div>
+
+        <p class="note">Not: Yıllık faiz oranı (APR) seçtiğiniz bileşik döneme göre periyot başına orana dönüştürülür.</p>
+
+        <!-- TABLE -->
+        <div class="table-wrap" id="scheduleWrap" style="display:none">
+          <table>
+            <thead>
+              <tr>
+                <th>Dönem</th>
+                <th>Taksit</th>
+                <th>Bakiye</th>
+              </tr>
+            </thead>
+            <tbody id="schedule"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- RIGHT: SUMMARY -->
+      <aside class="card summary-card">
+        <div class="meta">
+          <div><span>Tarih</span><strong id="metaDate">—</strong></div>
+          <div><span>Müşteri</span><strong id="metaCustomer">—</strong></div>
+          <div><span>Proje/Daire</span><strong id="metaProperty">—</strong></div>
+          <div><span>Hazırlayan</span><strong id="metaPrepared">—</strong></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><span>Satış Bedeli</span><strong id="sbSale">—</strong></div>
+          <div class="stat"><span>Peşinat</span><strong id="sbDown">—</strong></div>
+          <div class="stat"><span>Teslim Sonrası Bakiye</span><strong id="sbBalance">—</strong></div>
+          <div class="stat"><span>Teslim Sonrası Bakiye + Faiz</span><strong id="sbBalancePlusInterest">—</strong></div>
+          <div class="stat"><span>Toplam Faiz Yükü</span><strong id="sbTotalBurden">—</strong></div>
+        </div>
+        <hr class="divider" />
+        <div class="stats">
+          <div class="stat"><span>Aylık Taksit</span><strong id="primaryValue">—</strong></div>
+          <div class="stat"><span>Kredi Tutarı</span><strong id="loanAmount">—</strong></div>
+          <div class="stat"><span>Toplam Ödeme (taksitler)</span><strong id="totalPaid">—</strong></div>
+          <div class="stat"><span>Tahmini Bitiş</span><strong id="payoffDate">—</strong></div>
+        </div>
+
+        <p class="muted" id="summary">Değerleri girip “Hesapla”ya basın.</p>
+
+        <div class="saved box no-print">
+          <div class="saved-head">
+            <h3>Kaydedilen Planlar</h3>
+            <button class="btn tiny secondary" id="clearQuotesBtn">Tümünü Sil</button>
+          </div>
+          <ul id="savedList" class="saved-list"></ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="site-footer hidden" id="appFooter">
+    <div>© <span id="year"></span> Noyanlar Group • Tüm hakları saklıdır.</div>
+    <div class="footer-links">
+      <span>Tel: +90 392 000 00 00</span>
+      <span>•</span>
+      <a href="mailto:sales@noyanlar.com">sales@noyanlar.com</a>
+      <span>•</span>
+      <a href="https://noyanlar.com/" target="_blank" rel="noopener">noyanlar.com</a>
+    </div>
+  </footer>
+
+  <!-- Admin Fullscreen Modal -->
+  <div id="adminModal" class="modal-backdrop">
+    <div class="modal">
+      <header class="modal-head">
+        <h3>Kullanıcı Yönetimi</h3>
+        <button id="adminClose" class="btn tiny secondary">Kapat</button>
+      </header>
+
+      <div class="modal-body">
+        <div class="grid-2 modal-grid">
+          <div class="modal-card">
+            <h4>Yeni Kullanıcı Ekle</h4>
+            <div class="field">
+              <label>Ad Soyad</label>
+              <input id="newUserName" type="text" placeholder="Ad Soyad">
+            </div>
+            <div class="field">
+              <label>E-posta (opsiyonel)</label>
+              <input id="newUserEmail" type="email" placeholder="eposta@ornek.com">
+            </div>
+            <div class="field">
+              <label>Telefon (opsiyonel)</label>
+              <input id="newUserPhone" type="tel" placeholder="+90 ...">
+            </div>
+            <div class="field">
+              <label>Şifre</label>
+              <input id="newUserPass" type="password" placeholder="••••">
+            </div>
+            <div class="field">
+              <label>Rol</label>
+              <select id="newUserRole">
+                <option value="user" selected>Kullanıcı</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+            <button id="addUserBtn" class="btn">Ekle</button>
+          </div>
+
+          <div class="modal-card">
+            <h4>Admin PIN</h4>
+            <div class="field">
+              <label>Mevcut PIN</label>
+              <input id="oldPin" type="password" placeholder="****">
+            </div>
+            <div class="field">
+              <label>Yeni PIN</label>
+              <input id="newPin" type="password" placeholder="****">
+            </div>
+            <button id="changePinBtn" class="btn secondary">PIN Değiştir</button>
+            <p class="muted" style="margin-top:8px">Not: Basit demo amaçlıdır (localStorage).</p>
+          </div>
+        </div>
+
+        <div class="list" id="usersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
