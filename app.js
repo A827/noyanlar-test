@@ -1,4 +1,4 @@
-// app.js — NO LOGIN / NO ROLES — ES5 SAFE
+// app.js — NO LOGIN / NO ROLES — ES5 SAFE — Save Plan removed
 (function () {
   // THEME TOGGLE
   var THEME_KEY = 'theme';
@@ -21,8 +21,8 @@
     applyTheme(saved || 'auto');
   }
   function cycleTheme() {
-    var cur = null;
-    try { cur = localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) { cur = 'auto'; }
+    var cur = 'auto';
+    try { cur = localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) {}
     var next = cur === 'auto' ? 'light' : (cur === 'light' ? 'dark' : 'auto');
     applyTheme(next);
   }
@@ -77,9 +77,6 @@
   var printBtn       = $('printBtn');
   var calcBtn        = $('calcBtn');
   var resetBtn       = $('resetBtn');
-  var saveQuoteBtn   = $('saveQuoteBtn');
-  var clearQuotesBtn = $('clearQuotesBtn');
-  var savedList      = $('savedList');
 
   // HELPERS
   var sym = { GBP:'£', EUR:'€', USD:'$' };
@@ -270,68 +267,6 @@
     }
   }
 
-  // SAVED QUOTES
-  function getQuotes(){
-    try{ return JSON.parse(localStorage.getItem('quotes')||'[]'); }catch(e){ return []; }
-  }
-  function setQuotes(arr){
-    try{ localStorage.setItem('quotes', JSON.stringify(arr)); }catch(e){}
-    renderSavedList();
-  }
-  function renderSavedList(){
-    if (!savedList) return;
-    var items = getQuotes();
-    savedList.innerHTML = items.length ? '' : '<li class="id">Henüz kayıt yok.</li>';
-    for (var i=0;i<items.length;i++){
-      (function(idx){
-        var q = items[idx];
-        var li = document.createElement('li');
-        var left = document.createElement('div');
-        left.innerHTML = '<strong>'+(q.customer||'—')+'</strong> · '+(q.property||'—')+' <span class="id">('+(q.date)+')</span>';
-        var right = document.createElement('div'); right.className='actions';
-        var loadBtn = document.createElement('button'); loadBtn.className='btn tiny'; loadBtn.textContent='Yükle';
-        var delBtn = document.createElement('button'); delBtn.className='btn tiny secondary'; delBtn.textContent='Sil';
-        loadBtn.onclick = function(){ loadQuote(idx); };
-        delBtn.onclick = function(){
-          var arr=getQuotes(); arr.splice(idx,1); setQuotes(arr);
-        };
-        right.appendChild(loadBtn); right.appendChild(delBtn);
-        li.appendChild(left); li.appendChild(right);
-        savedList.appendChild(li);
-      })(i);
-    }
-  }
-  function loadQuote(i){
-    var items = getQuotes(); var q = items[i]; if(!q) return;
-    if (preparedByInp)   preparedByInp.value = q.preparedBy||'';
-    if (customerNameInp) customerNameInp.value = q.customer||'';
-    if (customerPhoneInp)customerPhoneInp.value = q.phone||'';
-    if (customerEmailInp)customerEmailInp.value = q.email||'';
-    if (propertyNameInp) propertyNameInp.value = q.property||'';
-    if (propertyBlockInp)propertyBlockInp.value = q.block||'';
-    if (propertyUnitInp) propertyUnitInp.value = q.unit||'';
-    if (propertyTypeInp) propertyTypeInp.value = q.type||'';
-    try {
-      if (preparedByInp) localStorage.setItem('preparedBy', preparedByInp.value||'');
-      if (currencySel) {
-        currencySel.value = q.currency || currencySel.value;
-        localStorage.setItem('currency', currencySel.value);
-      }
-    } catch(e){}
-    renderFields();
-    $('salePrice').value = q.sale||0;
-    $('down').value      = q.down||0;
-    $('apr').value       = q.apr||0;
-    $('term').value      = q.term||0;
-    if (interestFree) {
-      interestFree.checked = (q.apr === 0);
-      $('apr').disabled = interestFree.checked;
-    }
-    updateCurrencyUI();
-    syncMeta();
-    if (calcBtn) calcBtn.click();
-  }
-
   // EVENTS
   if (printBtn) printBtn.addEventListener('click', function(){
     var customer = (customerNameInp && customerNameInp.value ? customerNameInp.value : 'Musteri').trim().replace(/\s+/g,'_');
@@ -402,34 +337,6 @@
     URL.revokeObjectURL(a.href);
   });
 
-  if (saveQuoteBtn) saveQuoteBtn.addEventListener('click', function(){
-    var cur = currencySel ? currencySel.value : 'GBP';
-    var vals = collectValues();
-    if (!vals.salePrice || !vals.term){ alert('Kaydetmek için Satış Fiyatı ve Vade gerekli.'); return; }
-    var q = {
-      date: todayStr(),
-      preparedBy: preparedByInp && preparedByInp.value || '',
-      customer: customerNameInp && customerNameInp.value || '',
-      phone: customerPhoneInp && customerPhoneInp.value || '',
-      email: customerEmailInp && customerEmailInp.value || '',
-      property: propertyNameInp && propertyNameInp.value || '',
-      block: propertyBlockInp && propertyBlockInp.value || '',
-      unit: propertyUnitInp && propertyUnitInp.value || '',
-      type: propertyTypeInp && propertyTypeInp.value || '',
-      currency: cur,
-      sale: Number(vals.salePrice)||0,
-      down: Number(vals.down)||0,
-      apr: Number(vals.apr)||0,
-      term: Number(vals.term)||0
-    };
-    var arr = getQuotes(); arr.unshift(q); setQuotes(arr);
-  });
-
-  if (clearQuotesBtn) clearQuotesBtn.addEventListener('click', function(){
-    try { localStorage.removeItem('quotes'); } catch(e){}
-    renderSavedList();
-  });
-
   // INIT — app always visible
   (function init(){
     if (appHeader) appHeader.classList.remove('hidden');
@@ -443,6 +350,5 @@
     renderFields();
     updateCurrencyUI();
     syncMeta();
-    renderSavedList();
   })();
 })();

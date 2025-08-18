@@ -1,5 +1,5 @@
 /* ==============================
-   NOYANLAR — styles.css (NO LOGIN / NO ADMIN)
+   NOYANLAR — styles.css (NO SAVE PLAN)
    Matches index.html + app.js
    ============================== */
 
@@ -201,17 +201,6 @@ tbody tr:hover{background:color-mix(in srgb, var(--table-alt) 70%, var(--brand-2
 .divider{border:none; border-top:1px dashed var(--line); margin:12px 0}
 .chart{ width:100%; margin-top:10px; background:var(--chip); border:1px solid var(--line); border-radius:12px }
 
-/* Saved plans */
-.saved{margin-top:12px}
-.saved-head{display:flex; align-items:center; justify-content:space-between}
-.saved-list{list-style:none; padding:0; margin:10px 0 0}
-.saved-list li{
-  display:flex; align-items:center; justify-content:space-between; gap:8px;
-  background:var(--chip); border:1px solid var(--line); border-radius:12px; padding:8px 10px;
-}
-.saved-list .actions{gap:6px}
-.saved-list .id{font-size:12px; color:var(--muted)}
-
 /* FOOTER */
 .site-footer{
   max-width:1200px; margin:22px auto 32px; padding:0 16px;
@@ -231,7 +220,7 @@ tbody tr:hover{background:color-mix(in srgb, var(--table-alt) 70%, var(--brand-2
 @media print{
   .no-print{display:none !important}
   body{background:#fff; color:#000}
-  .card, .table-wrap, .stat, .saved li{box-shadow:none; background:#fff; border-color:#ddd}
+  .card, .table-wrap, .stat{box-shadow:none; background:#fff; border-color:#ddd}
   .print-area{background:#fff}
   .badge{border-color:#ddd}
   .site-footer{border-top-color:#ddd; color:#333}
@@ -250,9 +239,9 @@ tbody tr:hover{background:color-mix(in srgb, var(--table-alt) 70%, var(--brand-2
 @media print {
   @page { size: A4; margin: 14mm; }
   body{ background:#fff !important; color:#000 !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .no-print, .brandbar, .presets, .actions, .inputs-grid, .form-grid, .note, .saved.box, .nav-link { display:none !important; }
+  .no-print, .brandbar, .presets, .actions, .inputs-grid, .form-grid, .note, .nav-link { display:none !important; }
   .print-only{ display:block !important; }
-  .card, .table-wrap, .stat, .saved li, .summary-card { background:#fff !important; border:1px solid #ccc !important; box-shadow:none !important; }
+  .card, .table-wrap, .stat, .summary-card { background:#fff !important; border:1px solid #ccc !important; box-shadow:none !important; }
   .table-wrap{ max-height:none !important; overflow:visible !important; }
   thead th{ background:#f2f2f2 !important; color:#000 !important; }
   .print-header, .summary-card { break-inside: avoid; }
@@ -267,8 +256,3 @@ tbody tr:hover{background:color-mix(in srgb, var(--table-alt) 70%, var(--brand-2
   .print-footer .line{ height:1.2em; border-bottom:1px solid #333; width:220px; }
   .print-footer .pf-contact{ margin-top:10px; font-size:12px; color:#333; }
 }
-
-/* ===== Scrollbars (keep only table) ===== */
-.table-wrap::-webkit-scrollbar{ width:10px; height:10px; }
-.table-wrap::-webkit-scrollbar-thumb{ background:var(--chip-border); border-radius:999px; }
-.table-wrap::-webkit-scrollbar-track{ background:transparent; }
