@@ -97,3 +97,11 @@ footer {
     box-shadow: none;
   }
 }
+
+/* 🔴 REMOVED:
+.presets { ... }
+.chip { ... }
+.chip:hover { ... }
+.chip.active { ... }
+@media print { .presets { display: none; } }
+*/
