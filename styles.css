@@ -25,50 +25,59 @@ body {
 
 /* =========================
    THEME VARIABLES
+   (Dark = default)
 ========================= */
-
-/* Dark theme (default) */
-:root {
+:root,
+:root[data-theme="dark"] {
   --bg:#0a0f1c;
   --card:#111827;
   --ink:#f9fafb;
   --muted:#9ca3af;
   --line:#1f2937;
+
   --chip:#111827;
   --chip-border:#374151;
-  --chip-hover:rgba(139,28,35,.2);
-  --table-alt:#1a2234;
-  --table-head:#1f2937;
-  --btn-ghost-bg:#111827;
-  --btn-ghost-border:#374151;
+  --chip-hover:rgba(139,28,35,.22);
+
+  --table-alt:#141c2b;
+  --table-head:#182235;
+
+  --btn-ghost-bg:#0f172a;
+  --btn-ghost-border:#334155;
+
   --shadow:0 14px 30px rgba(0,0,0,.6);
   --watermark:#8b1c23;
+
   --brand-1:#b91c1c;
-  --brand-2:#dc2626;
+  --brand-2:#dc2626; /* used by primary button, focus, etc. */
   --brand-3:#ef4444;
 }
 
-/* === Improved Light Theme === */
+/* === Improved Light Theme (high contrast & clearer borders) === */
 :root.light,
-:root[data-theme="light"]{
-  --bg:#f4f6fb;            
-  --card:#ffffff;          
-  --ink:#0a0f1c;           
-  --muted:#4d576b;         
-  --line:#b8c4da;          
+:root[data-theme="light"] {
+  --bg:#f3f6fc;          /* brighter canvas */
+  --card:#ffffff;        /* pure white cards */
+  --ink:#0a0f1c;         /* near-black text */
+  --muted:#4b5568;       /* darker muted for readability */
+  --line:#b7c4dc;        /* clearer outlines/separators */
 
-  --chip:#ffffff;
-  --chip-border:#b8c4da;
-  --chip-hover:rgba(139,28,35,0.12);
+  --chip:#ffffff;        /* chips stay white */
+  --chip-border:#b7c4dc; /* visible chip border */
+  --chip-hover:rgba(139,28,35,0.14); /* brand-tinted ring */
 
-  --table-alt:#f2f5fa;     
-  --table-head:#e9eff9;    
+  --table-alt:#eef3fb;   /* stronger zebra */
+  --table-head:#e6eef9;  /* distinct header band */
 
   --btn-ghost-bg:#ffffff;
-  --btn-ghost-border:#a7b6d2;
+  --btn-ghost-border:#a6b6d4;
 
-  --shadow:0 14px 30px rgba(0,0,0,.12);
+  --shadow:0 14px 30px rgba(16, 30, 67, .12);
   --watermark:#8b1c23;
+
+  --brand-1:#b91c1c;
+  --brand-2:#c61e1e;     /* slightly deeper for contrast on white */
+  --brand-3:#a91515;
 }
 
 /* =========================
@@ -97,15 +106,14 @@ body {
 h1 {
   font-size: 24px;
   margin-bottom: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -.01em;
 }
-
 h2 {
   font-size: 20px;
   margin-bottom: 8px;
-  font-weight: 500;
+  font-weight: 600;
 }
-
 p {
   color: var(--muted);
   line-height: 1.5;
@@ -122,22 +130,24 @@ form {
 }
 
 label {
-  font-size: 14px;
-  margin-bottom: 4px;
+  font-size: 12px;
+  margin-bottom: 6px;
   display: block;
+  color: var(--muted);
+  letter-spacing: .02em;
 }
 
 input,
 select {
   width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 11px 12px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
   font-size: 14px;
   outline: none;
-  transition: border .2s, box-shadow .2s;
+  transition: border .15s ease, box-shadow .15s ease, background .15s ease;
 }
 
 input:focus,
@@ -146,23 +156,31 @@ select:focus {
   box-shadow: 0 0 0 4px var(--chip-hover);
 }
 
+/* Make inputs clearly white in light mode */
+:root.light input,
+:root.light select,
+:root[data-theme="light"] input,
+:root[data-theme="light"] select {
+  background: #fff;
+}
+
 /* =========================
    BUTTONS
 ========================= */
 .btn {
   padding: 10px 16px;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
   cursor: pointer;
   border: none;
-  font-weight: 500;
-  transition: background .2s, transform .1s, border .2s;
+  font-weight: 600;
+  transition: background .15s ease, transform .08s ease, border .15s ease, opacity .15s;
 }
 
 .btn:active { transform: scale(.98); }
 
 .btn.primary {
-  background: var(--brand-2);
+  background: linear-gradient(135deg, var(--brand-2), var(--brand-1));
   color: #fff;
 }
 
@@ -178,7 +196,15 @@ select:focus {
   color: var(--ink);
 }
 
-.btn:hover { opacity: .9; }
+.btn:hover { opacity: .92; }
+
+/* Stronger separation for light mode outline/ghost */
+:root.light .btn.ghost,
+:root[data-theme="light"] .btn.ghost,
+:root.light .btn.outline,
+:root[data-theme="light"] .btn.outline {
+  border: 1px solid var(--btn-ghost-border);
+}
 
 /* =========================
    TABLES
@@ -187,6 +213,7 @@ select:focus {
   overflow-x: auto;
   border-radius: 12px;
   border: 1px solid var(--line);
+  background: var(--card);
 }
 
 table {
@@ -200,132 +227,4 @@ thead {
   background: var(--table-head);
   position: sticky;
   top: 0;
-}
-
-th, td {
-  text-align: left;
-  padding: 12px;
-}
-
-tbody tr:nth-child(even) {
-  background: var(--table-alt);
-}
-
-tbody tr:hover {
-  background: color-mix(in srgb, var(--table-alt) 70%, var(--brand-2) 10%);
-}
-
-/* =========================
-   BADGES, STATS
-========================= */
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 6px;
-  background: var(--chip);
-  border: 1px solid var(--chip-border);
-  font-size: 12px;
-  color: var(--ink);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px;
-  border-radius: 12px;
-  background: var(--card);
-  border: 1px solid var(--line);
-}
-
-/* =========================
-   NAVIGATION
-========================= */
-.nav {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.nav-link {
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  cursor: pointer;
-  background: var(--chip);
-  border: 1px solid var(--chip-border);
-  color: var(--ink);
-}
-
-.nav-link:hover {
-  box-shadow:0 0 0 4px var(--chip-hover);
-}
-
-/* =========================
-   FOOTER
-========================= */
-footer {
-  margin-top: auto;
-  padding: 16px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-/* =========================
-   LIGHT MODE COMPONENT TWEAKS
-========================= */
-:root.light .card,
-:root[data-theme="light"] .card,
-:root.light .table-wrap,
-:root[data-theme="light"] .table-wrap{
-  border:1px solid var(--line);
-}
-
-:root.light .badge,
-:root[data-theme="light"] .badge{
-  background:#fff;
-  border:1px solid var(--btn-ghost-border);
-}
-
-:root.light input,
-:root.light select,
-:root[data-theme="light"] input,
-:root[data-theme="light"] select{
-  background:#fff;
-  border:1px solid var(--line);
-}
-
-:root.light input:focus,
-:root.light select:focus,
-:root[data-theme="light"] input:focus,
-:root[data-theme="light"] select:focus{
-  border-color: color-mix(in srgb, var(--brand-2) 45%, var(--line));
-  box-shadow: 0 0 0 4px var(--chip-hover);
-}
-
-:root.light .btn.ghost,
-:root[data-theme="light"] .btn.ghost,
-:root.light .btn.outline,
-:root[data-theme="light"] .btn.outline{
-  border:1px solid var(--btn-ghost-border);
-}
-
-:root.light .nav-link:hover,
-:root[data-theme="light"] .nav-link:hover{
-  box-shadow:0 0 0 4px var(--chip-hover);
-}
-
-:root.light .stat,
-:root[data-theme="light"] .stat{
-  background:#fff;
-  border:1px solid var(--line);
-}
-
-/* Light background gradient */
-:root.light body,
-:root[data-theme="light"] body{
-  background:
-    radial-gradient(1000px 600px at 10% -10%, color-mix(in srgb, var(--watermark) 12%, transparent), transparent 60%),
-    linear-gradient(120deg, #fafcff, var(--bg) 40%, #f7faff);
-}
+  z-index:
