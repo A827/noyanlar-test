@@ -258,3 +258,100 @@ tbody tr:hover{background:color-mix(in srgb, var(--table-alt) 70%, var(--brand-2
   .print-footer .line{ height:1.2em; border-bottom:1px solid #333; width:220px; }
   .print-footer .pf-contact{ margin-top:10px; font-size:12px; color:#333; }
 }
+/* === Light mode visibility upgrade === */
+:root.light,
+:root[data-theme="light"]{
+  /* Higher-contrast neutrals */
+  --bg:#f5f7fb;            /* page background a touch cooler */
+  --card:#ffffff;          /* cards stay pure white */
+  --ink:#0e1426;           /* darker body text for readability */
+  --muted:#5a667c;         /* slightly darker muted text */
+  --line:#c4cfe2;          /* more visible borders/dividers */
+
+  /* Chips / surfaces */
+  --chip:#ffffff;
+  --chip-border:#c4cfe2;
+  --chip-hover:rgba(139,28,35,0.10); /* brand-tinted hover ring */
+
+  /* Tables */
+  --table-alt:#f6f8fc;     /* clearer zebra rows */
+  --table-head:#eef3fb;    /* brighter sticky header */
+
+  /* Ghost buttons */
+  --btn-ghost-bg:#ffffff;
+  --btn-ghost-border:#b4c1d9;
+
+  /* Shadows (slightly stronger so cards separate from bg) */
+  --shadow:0 12px 28px rgba(16, 30, 67, 0.10);
+}
+
+/* Card & table borders slightly clearer in light */
+:root.light .card,
+:root[data-theme="light"] .card,
+:root.light .table-wrap,
+:root[data-theme="light"] .table-wrap{
+  border-color: var(--line);
+}
+
+/* Badges: a bit more contrast on light */
+:root.light .badge,
+:root[data-theme="light"] .badge{
+  background:#fff;
+  border-color: var(--btn-ghost-border);
+}
+
+/* Inputs: thicker focus ring & clearer border on light */
+:root.light input,
+:root.light select,
+:root[data-theme="light"] input,
+:root[data-theme="light"] select{
+  background:#fff;
+  border-color: var(--line);
+}
+:root.light input:focus,
+:root.light select:focus,
+:root[data-theme="light"] input:focus,
+:root[data-theme="light"] select:focus{
+  border-color: color-mix(in srgb, var(--brand-2) 42%, var(--line));
+  box-shadow: 0 0 0 4px var(--chip-hover);
+}
+
+/* Ghost/outline buttons: increase separation */
+:root.light .btn.ghost,
+:root[data-theme="light"] .btn.ghost{
+  background: var(--btn-ghost-bg);
+  border-color: var(--btn-ghost-border);
+}
+:root.light .btn.outline,
+:root[data-theme="light"] .btn.outline{
+  border-color: var(--btn-ghost-border);
+}
+
+/* Nav links: stronger hover halo in light */
+:root.light .nav-link:hover,
+:root[data-theme="light"] .nav-link:hover{
+  box-shadow: 0 0 0 4px var(--chip-hover);
+}
+
+/* Stat tiles: brighter surface & clearer border in light */
+:root.light .stat,
+:root[data-theme="light"] .stat{
+  background:#fff;
+  border-color: var(--line);
+}
+
+/* Table rows: a touch darker hover for clarity on light */
+:root.light tbody tr:hover,
+:root[data-theme="light"] tbody tr:hover{
+  background: color-mix(in srgb, var(--table-alt) 70%, var(--brand-2) 8%);
+}
+
+/* Optional: improve gradient background for light */
+@media (prefers-color-scheme: light){
+  :root[data-theme="light"] body,
+  :root.light body{
+    background:
+      radial-gradient(1000px 600px at 10% -10%, color-mix(in srgb, var(--watermark) 10%, transparent), transparent 60%),
+      linear-gradient(120deg, #f7f9ff, var(--bg) 40%, #f7f9ff);
+  }
+}
