@@ -1,4 +1,4 @@
-// app.js — NO LOGIN / NO ROLES — ES5 SAFE — Save Plan removed
+// app.js — NO LOGIN / NO ROLES — ES5 SAFE — Presets removed
 (function () {
   // THEME TOGGLE
   var THEME_KEY = 'theme';
@@ -304,17 +304,7 @@
     })(metaInputs[k]);
   }
 
-  var presets = $('presets');
-  if (presets) presets.addEventListener('click', function(e){
-    var b = e.target.closest ? e.target.closest('.chip') : null;
-    if(!b) return;
-    renderFields();
-    $('salePrice').value = Number(b.getAttribute('data-sale')||0);
-    $('down').value      = Number(b.getAttribute('data-down')||0);
-    $('apr').value       = Number(b.getAttribute('data-apr')||0);
-    $('term').value      = Number(b.getAttribute('data-term')||0);
-    calculate();
-  });
+  // (Removed) Presets click handler
 
   if (calcBtn) calcBtn.addEventListener('click', function(){ syncMeta(); calculate(); });
 
