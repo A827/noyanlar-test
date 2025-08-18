@@ -6,9 +6,9 @@
   var themeToggle = document.getElementById('themeToggle');
 
   function applyTheme(mode) {
-    root.classList.remove('light');
     root.setAttribute('data-theme', mode);
-    if (mode === 'light') root.classList.add('light');
+    // keep .light in sync (back-compat with CSS that references .light)
+    root.classList.toggle('light', mode === 'light');
     try { localStorage.setItem(THEME_KEY, mode); } catch (e) {}
     if (themeToggle) {
       themeToggle.textContent = mode === 'light' ? '☀️' : (mode === 'dark' ? '🌙' : '🌗');

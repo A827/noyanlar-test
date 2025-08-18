@@ -1,10 +1,11 @@
-style - /* ==============================
+/* ==============================
    NOYANLAR — styles.css (NO SAVE PLAN)
    Matches index.html + app.js
    ============================== */
 
 /* THEME TOKENS (Dark default) */
-:root{
+:root,
+:root[data-theme="dark"]{
   --brand:#8b1c23;
   --brand-2:#caa46a;
 
@@ -28,8 +29,9 @@ style - /* ==============================
   --shadow:0 20px 50px rgba(0,0,0,.35);
 }
 
-/* LIGHT THEME OVERRIDES (when .light is on <html>) */
-:root.light{
+/* LIGHT THEME OVERRIDES (when .light class OR data-theme="light") */
+:root.light,
+:root[data-theme="light"]{
   --bg:#f7f8fb;
   --card:#ffffff;
   --ink:#101629;
