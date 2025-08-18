@@ -74,7 +74,7 @@
           </div>
         </div>
 
-        <!-- Currency & compounding -->
+        <!-- Currency, compounding, term, interest-free -->
         <div class="form-grid">
           <div class="field">
             <label>Para Birimi</label>
@@ -92,6 +92,10 @@
               <option value="1">Yıllık (1)</option>
             </select>
           </div>
+          <div class="field">
+            <label for="term">Vade (ay)</label>
+            <input id="term" type="number" step="1" placeholder="örn. 120" />
+          </div>
           <div class="field checkbox">
             <label class="chk">
               <input type="checkbox" id="interestFree" />
@@ -100,7 +104,7 @@
           </div>
         </div>
 
-        <!-- Numeric inputs (rendered by JS) -->
+        <!-- Numeric inputs (rendered by JS) — ONLY price, down, APR -->
         <div id="inputs" class="inputs-grid"></div>
 
         <div class="actions no-print">
