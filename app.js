@@ -1,4 +1,4 @@
-// app.js — NO LOGIN / NO ROLES — ES5 SAFE — Presets removed
+// app.js — NO LOGIN / NO ROLES — ES5 SAFE — Presets removed — 2-state theme
 (function () {
 // THEME TOGGLE — 2-state (light/dark) only
 var THEME_KEY = 'theme';
@@ -11,15 +11,11 @@ function systemPrefersLight(){
 }
 
 function applyTheme(mode){
-  // normalize to 'light' or 'dark'
   var m = (mode === 'light' || mode === 'dark') ? mode : (systemPrefersLight() ? 'light' : 'dark');
-
   root.classList.remove('light');
   root.setAttribute('data-theme', m);
   if (m === 'light') root.classList.add('light');
-
   try { localStorage.setItem(THEME_KEY, m); } catch(e){}
-
   if (themeToggle){
     themeToggle.textContent = m === 'light' ? '☀️' : '🌙';
     themeToggle.title = 'Tema: ' + m + ' (tıkla: ' + (m === 'light' ? 'dark' : 'light') + ')';
@@ -29,19 +25,14 @@ function applyTheme(mode){
 function initTheme(){
   var saved = null;
   try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
-
-  // migrate any legacy 'auto' value to a concrete mode once
-  if (saved === 'auto' || saved === null){
-    applyTheme(systemPrefersLight() ? 'light' : 'dark');
-  } else {
-    applyTheme(saved);
-  }
+  if (saved === 'auto' || saved === null){ applyTheme(systemPrefersLight() ? 'light' : 'dark'); }
+  else { applyTheme(saved); }
 }
 
 function cycleTheme(){
   var cur = 'dark';
   try { cur = localStorage.getItem(THEME_KEY) || 'dark'; } catch(e){}
-  applyTheme(cur === 'light' ? 'dark' : 'light'); // only two states
+  applyTheme(cur === 'light' ? 'dark' : 'light');
 }
 
 if (themeToggle) themeToggle.addEventListener('click', cycleTheme);
