@@ -1,33 +1,51 @@
 // app.js — NO LOGIN / NO ROLES — ES5 SAFE — Presets removed
 (function () {
-  // THEME TOGGLE
-  var THEME_KEY = 'theme';
-  var root = document.documentElement;
-  var themeToggle = document.getElementById('themeToggle');
+// THEME TOGGLE — 2-state (light/dark) only
+var THEME_KEY = 'theme';
+var root = document.documentElement;
+var themeToggle = document.getElementById('themeToggle');
 
-  function applyTheme(mode) {
-    root.setAttribute('data-theme', mode);
-    // keep .light in sync (back-compat with CSS that references .light)
-    root.classList.toggle('light', mode === 'light');
-    try { localStorage.setItem(THEME_KEY, mode); } catch (e) {}
-    if (themeToggle) {
-      themeToggle.textContent = mode === 'light' ? '☀️' : (mode === 'dark' ? '🌙' : '🌗');
-      themeToggle.title = 'Tema: ' + mode;
-    }
+function systemPrefersLight(){
+  try { return window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches; }
+  catch(e){ return false; }
+}
+
+function applyTheme(mode){
+  // normalize to 'light' or 'dark'
+  var m = (mode === 'light' || mode === 'dark') ? mode : (systemPrefersLight() ? 'light' : 'dark');
+
+  root.classList.remove('light');
+  root.setAttribute('data-theme', m);
+  if (m === 'light') root.classList.add('light');
+
+  try { localStorage.setItem(THEME_KEY, m); } catch(e){}
+
+  if (themeToggle){
+    themeToggle.textContent = m === 'light' ? '☀️' : '🌙';
+    themeToggle.title = 'Tema: ' + m + ' (tıkla: ' + (m === 'light' ? 'dark' : 'light') + ')';
   }
-  function initTheme() {
-    var saved = null;
-    try { saved = localStorage.getItem(THEME_KEY); } catch (e) {}
-    applyTheme(saved || 'auto');
+}
+
+function initTheme(){
+  var saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
+
+  // migrate any legacy 'auto' value to a concrete mode once
+  if (saved === 'auto' || saved === null){
+    applyTheme(systemPrefersLight() ? 'light' : 'dark');
+  } else {
+    applyTheme(saved);
   }
-  function cycleTheme() {
-    var cur = 'auto';
-    try { cur = localStorage.getItem(THEME_KEY) || 'auto'; } catch (e) {}
-    var next = cur === 'auto' ? 'light' : (cur === 'light' ? 'dark' : 'auto');
-    applyTheme(next);
-  }
-  if (themeToggle) themeToggle.addEventListener('click', cycleTheme);
-  initTheme();
+}
+
+function cycleTheme(){
+  var cur = 'dark';
+  try { cur = localStorage.getItem(THEME_KEY) || 'dark'; } catch(e){}
+  applyTheme(cur === 'light' ? 'dark' : 'light'); // only two states
+}
+
+if (themeToggle) themeToggle.addEventListener('click', cycleTheme);
+initTheme();
 
   // DOM GETTER
   function $(id){ return document.getElementById(id); }
