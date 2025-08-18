@@ -1,5 +1,5 @@
 /* ==============================
-   NOYANLAR — styles.css (Restored Layout)
+   NOYANLAR — styles.css (NO SAVE PLAN)
    Matches index.html + app.js
    ============================== */
 
@@ -29,32 +29,27 @@
   --shadow:0 20px 50px rgba(0,0,0,.35);
 }
 
-/* LIGHT THEME OVERRIDES (2-state) */
+/* LIGHT THEME OVERRIDES (when .light class OR data-theme="light") */
 :root.light,
 :root[data-theme="light"]{
-  --bg:#f7f9fe;
+  --bg:#f5f7fb;
   --card:#ffffff;
-  --ink:#101629;
-  --muted:#5a6474;
-  --line:#cbd7ee;
+  --ink:#0e1426;
+  --muted:#5a667c;
+  --line:#c4cfe2;
 
   --chip:#ffffff;
-  --chip-border:#cbd7ee;
-  --chip-hover:#e7dec640;
+  --chip-border:#c4cfe2;
+  --chip-hover:rgba(139,28,35,0.10);
 
-  --table-alt:#f3f6fb;
+  --table-alt:#f6f8fc;
   --table-head:#eef3fb;
 
   --btn-ghost-bg:#ffffff;
-  --btn-ghost-border:#b8c7e6;
+  --btn-ghost-border:#b4c1d9;
 
   --watermark:#8b1c23;
-  --shadow:0 12px 28px rgba(16, 30, 67, .12);
-}
-
-/* AUTO: follow system pref only when data-theme="auto" (we don't use it, kept harmless) */
-@media (prefers-color-scheme: light){
-  :root[data-theme="auto"]{ /* same as light */ }
+  --shadow:0 12px 28px rgba(16, 30, 67, 0.10);
 }
 
 /* GLOBAL RESET */
@@ -117,7 +112,7 @@ body{
   display:grid; gap:12px; margin-top:10px;
   grid-template-columns:repeat(2,minmax(0,1fr));
 }
-@media(min-width:980px){ .inputs-grid{grid-template-columns:repeat(4,minmax(0,1fr))} }
+@media(min-width:980px){ .inputs-grid{grid-template-columns:repeat(3,minmax(0,1fr))} }
 
 /* Fields */
 .field{display:flex; flex-direction:column; gap:6px}
@@ -125,12 +120,10 @@ label{font-size:12px; color:var(--muted); margin-bottom:6px; display:block}
 input,select{
   width:100%; padding:12px 14px; border-radius:12px;
   border:1px solid var(--line); background:var(--chip); color:var(--ink); outline:none;
-  -webkit-appearance:none; appearance:none; /* consistent across browsers */
-  background-image: none;
 }
 input:focus,select:focus{
   border-color:var(--brand-2);
-  box-shadow:0 0 0 3px var(--chip-hover);
+  box-shadow:0 0 0 3px var(--chip-hover, rgba(202,164,106,0.18));
 }
 @supports (color: color-mix(in srgb, #000 50%, #fff 50%)){
   input:focus,select:focus{ border-color:color-mix(in srgb, var(--brand-2) 40%, var(--line)); }
@@ -226,20 +219,4 @@ tbody tr:hover{background:color-mix(in srgb, var(--table-alt) 70%, var(--brand-2
   .print-header, .summary-card { break-inside: avoid; }
   table, tr, td, th { break-inside: avoid; }
   .grid{ display:block !important; }
-  .print-header .ph-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; padding:12px; }
-  .print-header .ph-meta{ display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:8px 16px; }
-  .print-header .ph-meta span{ font-size:12px; color:#555; }
-  .print-header .ph-meta strong{ font-size:14px; }
-  .print-footer{ margin-top:16px; padding:12px; }
-  .print-footer .pf-grid{ display:flex; gap:40px; }
-  .print-footer .line{ height:1.2em; border-bottom:1px solid #333; width:220px; }
-  .print-footer .pf-contact{ margin-top:10px; font-size:12px; color:#333; }
-}
-
-/* Light background softening for the page */
-:root.light body,
-:root[data-theme="light"] body{
-  background:
-    radial-gradient(1000px 600px at 10% -10%, color-mix(in srgb, var(--watermark) 12%, transparent), transparent 60%),
-    linear-gradient(120deg, #f9fbff, var(--bg) 40%, #f9fbff);
 }

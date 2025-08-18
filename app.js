@@ -1,4 +1,4 @@
-// app.js — NO LOGIN / NO ROLES — ES5 SAFE — Presets removed — 2-state theme
+// app.js — NO LOGIN / NO ROLES — ES5 SAFE — Presets removed
 (function () {
 // THEME TOGGLE — 2-state (light/dark) only
 var THEME_KEY = 'theme';
@@ -11,11 +11,15 @@ function systemPrefersLight(){
 }
 
 function applyTheme(mode){
+  // normalize to 'light' or 'dark'
   var m = (mode === 'light' || mode === 'dark') ? mode : (systemPrefersLight() ? 'light' : 'dark');
+
   root.classList.remove('light');
   root.setAttribute('data-theme', m);
   if (m === 'light') root.classList.add('light');
+
   try { localStorage.setItem(THEME_KEY, m); } catch(e){}
+
   if (themeToggle){
     themeToggle.textContent = m === 'light' ? '☀️' : '🌙';
     themeToggle.title = 'Tema: ' + m + ' (tıkla: ' + (m === 'light' ? 'dark' : 'light') + ')';
@@ -25,14 +29,19 @@ function applyTheme(mode){
 function initTheme(){
   var saved = null;
   try { saved = localStorage.getItem(THEME_KEY); } catch(e){}
-  if (saved === 'auto' || saved === null){ applyTheme(systemPrefersLight() ? 'light' : 'dark'); }
-  else { applyTheme(saved); }
+
+  // migrate any legacy 'auto' value to a concrete mode once
+  if (saved === 'auto' || saved === null){
+    applyTheme(systemPrefersLight() ? 'light' : 'dark');
+  } else {
+    applyTheme(saved);
+  }
 }
 
 function cycleTheme(){
   var cur = 'dark';
   try { cur = localStorage.getItem(THEME_KEY) || 'dark'; } catch(e){}
-  applyTheme(cur === 'light' ? 'dark' : 'light');
+  applyTheme(cur === 'light' ? 'dark' : 'light'); // only two states
 }
 
 if (themeToggle) themeToggle.addEventListener('click', cycleTheme);
@@ -61,6 +70,8 @@ initTheme();
   var propertyBlockInp = $('propertyBlock');
   var propertyUnitInp  = $('propertyUnit');
   var propertyTypeInp  = $('propertyType');
+
+  var termInp = $('term');
 
   var metaDate     = $('metaDate');
   var metaCustomer = $('metaCustomer');
@@ -97,7 +108,7 @@ initTheme();
   function todayStr(){ return new Date().toLocaleDateString(); }
   function getSymbol(){ return sym[currencySel && currencySel.value] || ''; }
 
-  // RENDER INPUTS
+  // RENDER INPUTS (now ONLY the three money/interest fields)
   function renderFields(){
     if (!inputsDiv) return;
     inputsDiv.innerHTML =
@@ -114,10 +125,6 @@ initTheme();
       '<div class="field">' +
         '<label for="apr">Yıllık Faiz Oranı (%)</label>' +
         '<input id="apr" type="number" step="0.01" placeholder="örn. 3.75" '+(interestFree && interestFree.checked ? 'disabled' : '')+'/>' +
-      '</div>' +
-      '<div class="field">' +
-        '<label for="term">Vade (ay)</label>' +
-        '<input id="term" type="number" step="1" placeholder="örn. 120" />' +
       '</div>';
 
     if (scheduleWrap) scheduleWrap.style.display='none';
@@ -145,7 +152,7 @@ initTheme();
     var salePriceEl = $('salePrice');
     var downEl = $('down');
     var aprEl = $('apr');
-    var termEl = $('term');
+    var termEl = termInp;
     var salePrice = Number(salePriceEl && salePriceEl.value ? salePriceEl.value : 0);
     var down = Number(downEl && downEl.value ? downEl.value : 0);
     var apr  = (interestFree && interestFree.checked) ? 0 : Number(aprEl && aprEl.value ? aprEl.value : 0);
@@ -305,7 +312,7 @@ initTheme();
   });
 
   var metaInputs = [customerNameInp, customerPhoneInp, customerEmailInp,
-    propertyNameInp, propertyBlockInp, propertyUnitInp, propertyTypeInp];
+    propertyNameInp, propertyBlockInp, propertyUnitInp, propertyTypeInp, termInp];
   for (var k=0;k<metaInputs.length;k++){
     (function(inp){
       if (!inp) return;
@@ -317,7 +324,7 @@ initTheme();
 
   if (resetBtn) resetBtn.addEventListener('click', function(){
     var arr = [customerNameInp, customerPhoneInp, customerEmailInp,
-      propertyNameInp, propertyBlockInp, propertyUnitInp, propertyTypeInp];
+      propertyNameInp, propertyBlockInp, propertyUnitInp, propertyTypeInp, termInp];
     for (var i=0;i<arr.length;i++){ if (arr[i]) arr[i].value=''; }
     syncMeta();
     renderFields();
