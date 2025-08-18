@@ -1,4 +1,4 @@
-<!-- index.html -->
+<!-- index.html (NO LOGIN / NO ROLES) -->
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -8,42 +8,12 @@
   <meta name="theme-color" content="#8b1c23" />
   <link rel="stylesheet" href="styles.css" />
   <style>
-    /* Lightweight login gate styling (uses existing tokens) */
-    .gate{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:var(--bg); z-index:100; padding:24px}
-    .gate .panel{width:min(560px,96%); background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:16px; padding:20px 20px 16px; box-shadow:0 24px 80px rgba(0,0,0,.45)}
-    .gate .panel h1{margin:0 0 4px; font-size:22px}
-    .gate .panel p{margin:0 0 16px; color:var(--muted)}
-    .gate .row{display:grid; grid-template-columns:1fr; gap:12px; margin:12px 0 16px}
-    .gate .actions{display:flex; gap:10px; justify-content:flex-end; margin-top:6px}
-    .gate .small{font-size:12px; color:var(--muted)}
     .hidden{display:none !important}
   </style>
 </head>
 <body>
-  <!-- AUTH GATE -->
-  <div id="authGate" class="gate">
-    <div class="panel">
-      <h1>Noyanlar • Giriş</h1>
-      <p>Lütfen kullanıcı adı ve şifreyi girin.</p>
-      <div class="row">
-        <div class="field">
-          <label for="loginUser">Kullanıcı Adı</label>
-          <input id="loginUser" type="text" placeholder="Örn. admin" />
-        </div>
-        <div class="field">
-          <label for="loginPass">Şifre</label>
-          <input id="loginPass" type="password" placeholder="••••" />
-        </div>
-      </div>
-      <div class="actions">
-        <button id="loginBtn" class="btn">Giriş Yap</button>
-      </div>
-      <p class="small">Not: Bu demo yerel depolama (localStorage) kullanır. Üretimde sunucu tabanlı sisteme geçeceğiz.</p>
-    </div>
-  </div>
-
   <!-- BRAND BAR -->
-  <header class="brandbar no-print hidden" id="appHeader">
+  <header class="brandbar no-print" id="appHeader">
     <div class="brand-left">
       <div class="brand-logo" aria-hidden="true">
         <svg viewBox="0 0 256 256" width="28" height="28" role="img">
@@ -58,13 +28,11 @@
     </div>
     <nav class="brand-right">
       <button id="themeToggle" class="nav-link" aria-label="Tema değiştir">🌙/☀️</button>
-      <button id="adminBtn" class="nav-link" title="Kullanıcı yönetimi">Admin</button>
-      <button id="logoutBtn" class="nav-link" title="Çıkış">Çıkış</button>
       <a href="https://noyanlar.com/" target="_blank" rel="noopener" class="nav-link">noyanlar.com</a>
     </nav>
   </header>
 
-  <main class="wrap print-area hidden" id="appMain">
+  <main class="wrap print-area" id="appMain">
     <div class="page-head">
       <h1>Ödeme Planı</h1>
       <span class="badge" id="currencyBadge">Para Birimi: GBP (£)</span>
@@ -208,7 +176,7 @@
     </div>
   </main>
 
-  <footer class="site-footer hidden" id="appFooter">
+  <footer class="site-footer" id="appFooter">
     <div>© <span id="year"></span> Noyanlar Group • Tüm hakları saklıdır.</div>
     <div class="footer-links">
       <span>Tel: +90 392 000 00 00</span>
@@ -218,100 +186,6 @@
       <a href="https://noyanlar.com/" target="_blank" rel="noopener">noyanlar.com</a>
     </div>
   </footer>
-
-  <!-- Admin Fullscreen Modal -->
-  <div id="adminModal" class="modal-backdrop">
-    <div class="modal">
-      <header class="modal-head">
-        <h3>Kullanıcı Yönetimi</h3>
-        <button id="adminClose" class="btn tiny secondary">Kapat</button>
-      </header>
-
-      <div class="modal-body">
-        <div class="modal-grid">
-          <!-- Create User -->
-          <div class="modal-card">
-            <h4>Yeni Kullanıcı Ekle</h4>
-            <div class="field">
-              <label>Ad / Kullanıcı Adı</label>
-              <input id="newUserName" type="text" placeholder="Örn. coskun">
-            </div>
-            <div class="field">
-              <label>E-posta (opsiyonel)</label>
-              <input id="newUserEmail" type="email" placeholder="eposta@ornek.com">
-            </div>
-            <div class="field">
-              <label>Telefon (opsiyonel)</label>
-              <input id="newUserPhone" type="tel" placeholder="+90 ...">
-            </div>
-            <div class="field">
-              <label>Rol</label>
-              <select id="newUserRole">
-                <option value="user" selected>Kullanıcı</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Şifre</label>
-              <input id="newUserPass" type="password" placeholder="••••">
-            </div>
-            <button id="addUserBtn" class="btn">Ekle</button>
-          </div>
-
-          <!-- Admin PIN -->
-          <div class="modal-card">
-            <h4>Admin PIN</h4>
-            <div class="field">
-              <label>Mevcut PIN</label>
-              <input id="oldPin" type="password" placeholder="****">
-            </div>
-            <div class="field">
-              <label>Yeni PIN</label>
-              <input id="newPin" type="password" placeholder="****">
-            </div>
-            <button id="changePinBtn" class="btn secondary">PIN Değiştir</button>
-            <p class="muted" style="margin-top:8px">Not: Basit demo amaçlıdır (localStorage).</p>
-          </div>
-
-          <!-- Edit User (single page) -->
-          <div class="modal-card" id="editUserCard" style="display:none">
-            <h4>Kullanıcıyı Düzenle</h4>
-            <input type="hidden" id="editUserId" />
-            <div class="field">
-              <label>Ad / Kullanıcı Adı</label>
-              <input id="editUserName" type="text" placeholder="kullanıcı">
-            </div>
-            <div class="field">
-              <label>E-posta</label>
-              <input id="editUserEmail" type="email" placeholder="eposta@ornek.com">
-            </div>
-            <div class="field">
-              <label>Telefon</label>
-              <input id="editUserPhone" type="tel" placeholder="+90 ...">
-            </div>
-            <div class="field">
-              <label>Rol</label>
-              <select id="editUserRole">
-                <option value="user">Kullanıcı</option>
-                <option value="admin">Admin</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Yeni Şifre (boş: değiştirme)</label>
-              <input id="editUserPass" type="password" placeholder="••••">
-            </div>
-            <div class="actions" style="justify-content:flex-start">
-              <button id="saveUserBtn" class="btn">Kaydet</button>
-              <button id="cancelEditBtn" class="btn secondary">İptal</button>
-            </div>
-          </div>
-        </div>
-
-        <h4 style="margin-top:18px">Kullanıcılar</h4>
-        <div class="list" id="usersList"></div>
-      </div>
-    </div>
-  </div>
 
   <script src="app.js" defer></script>
 </body>
