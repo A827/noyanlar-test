@@ -88,8 +88,37 @@ footer {
   --accent-ink: #fff;
 }
 
+/* 🔙 Original Hazır Planlar styles */
+.presets {
+  margin: 10px 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--card);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.chip:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.chip.active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
 @media print {
-  header, button, footer {
+  header, button, footer, .presets {
     display: none;
   }
   main {
@@ -97,11 +126,3 @@ footer {
     box-shadow: none;
   }
 }
-
-/* 🔴 REMOVED:
-.presets { ... }
-.chip { ... }
-.chip:hover { ... }
-.chip.active { ... }
-@media print { .presets { display: none; } }
-*/
